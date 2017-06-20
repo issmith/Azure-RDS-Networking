@@ -1,0 +1,155 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "rdsbroker-asName": {
+      "type": "string",
+      "minLength": 1
+    }},
+  "variables": {
+    "wgm01-vnetName": "wgm01-vnet",
+    "wgm01-vnetPrefix": "10.1.0.0/20",
+    "wgm01-vnetSubnet1Name": "domaincontrollers",
+    "wgm01-vnetSubnet1Prefix": "10.1.0.0/24",
+    "wgm01-vnetSubnet2Name": "emirapplication",
+    "wgm01-vnetSubnet2Prefix": "10.1.1.0/24",
+    "wgm01-vnetSubnet3Name": "emirsessionhosts",
+    "wgm01-vnetSubnet3Prefix": "10.1.2.0/24",
+    "wgm01-vnetSubnet4Name": "rdsgatewayrdsweb",
+    "wgm01-vnetSubnet4Prefix": "10.1.3.0/24",
+    "rdsbrokerIntlbName": "rdsbroker-intlb",
+    "rdsbrokerAS": "rdsbroker-as",
+    "vnetId1": "[resourceId('Microsoft.Network/virtualNetworks', variables('wgm01-vnetName'))]",
+    "subnet2Ref": "[concat(variables('vnetId1'), '/subnets/', variables('wgm01-vnetSubnet2Name'))]"
+  },
+  "resources": [
+    {
+      "name": "[variables('wgm01-vnetName')]",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "dependsOn": [],
+      "tags": {
+        "displayName": "[variables('wgm01-vnetName')]"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('wgm01-vnetPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('wgm01-vnetSubnet1Name')]",
+            "properties": {
+              "addressPrefix": "[variables('wgm01-vnetSubnet1Prefix')]"
+            }
+          },
+          {
+            "name": "[variables('wgm01-vnetSubnet2Name')]",
+            "properties": {
+              "addressPrefix": "[variables('wgm01-vnetSubnet2Prefix')]"
+            }
+          },
+          {
+            "name": "[variables('wgm01-vnetSubnet3Name')]",
+            "properties": {
+              "addressPrefix": "[variables('wgm01-vnetSubnet3Prefix')]"
+            }
+          },
+          {
+            "name": "[variables('wgm01-vnetSubnet4Name')]",
+            "properties": {
+              "addressPrefix": "[variables('wgm01-vnetSubnet4Prefix')]"
+            }
+          }
+        ]
+      }
+    },
+
+
+
+
+    {
+      "name": "[parameters('rdsbroker-asName')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [ "[variables('wgm01-vnetName')]" ],
+      "tags": {
+        "displayName": " variables('rdsbrokerAS')"
+      },
+      "properties": {
+        "platformUpdateDomainCount": 5,
+        "platformFaultDomainCount": 2
+      }
+    },
+
+
+
+    {
+      "apiVersion": "2015-05-01-preview",
+      "type": "Microsoft.Network/loadBalancers",
+      "name": "[variables('rdsbrokerIntlbName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[variables('wgm01-vnetName')]"
+      ],
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "properties": {
+              "subnet": {
+                "id": "[variables('subnet2Ref')]"
+              },
+              "privateIPAddress": "10.1.1.100",
+              "privateIPAllocationMethod": "Static"
+            },
+            "name": "LoadBalancerFrontend"
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "BackendPool1"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('rdsbrokerIntlbName')), '/frontendIpConfigurations/LoadBalancerFrontend')]"
+              },
+              "backendAddressPool": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('rdsbrokerIntlbName')), '/backendAddressPools/BackendPool1')]"
+              },
+              "probe": {
+                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('rdsbrokerIntlbName')), '/probes/lbprobe')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 3389,
+              "backendPort": 3389,
+              "idleTimeoutInMinutes": 15
+            },
+            "Name": "lbrule"
+          }
+        ],
+        "probes": [
+          {
+            "properties": {
+              "protocol": "Tcp",
+              "port": 3389,
+              "intervalInSeconds": 15,
+              "numberOfProbes": 2
+            },
+            "name": "lbprobe"
+          }
+        ]
+      }
+    }
+
+
+
+
+  ],
+  "outputs": {}
+}
