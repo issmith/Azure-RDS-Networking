@@ -2,10 +2,8 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "rdsbroker-asName": {
-      "type": "string",
-      "minLength": 1
-    }},
+
+    },
   "variables": {
     "wgm01-vnetName": "wgm01-vnet",
     "wgm01-vnetPrefix": "10.1.0.0/20",
@@ -19,8 +17,13 @@
     "wgm01-vnetSubnet4Prefix": "10.1.3.0/24",
     "rdsbrokerIntlbName": "rdsbroker-intlb",
     "rdsbrokerAS": "rdsbroker-as",
+    "domaincontrollersAS": "domaincontrollers-as",
+    "emirsessionhostAS": "emirsessionhost-as",
+    "rdsgatewayrdswebAS": "rdsgatewayrdsweb-as",
+
     "vnetId1": "[resourceId('Microsoft.Network/virtualNetworks', variables('wgm01-vnetName'))]",
     "subnet2Ref": "[concat(variables('vnetId1'), '/subnets/', variables('wgm01-vnetSubnet2Name'))]"
+
   },
   "resources": [
     {
@@ -30,7 +33,7 @@
       "apiVersion": "2016-03-30",
       "dependsOn": [],
       "tags": {
-        "displayName": "[variables('wgm01-vnetName')]"
+        "displayName": "VNET]"
       },
       "properties": {
         "addressSpace": {
@@ -71,13 +74,13 @@
 
 
     {
-      "name": "[parameters('rdsbroker-asName')]",
+      "name": "[variables('rdsbrokerAS')]",
       "type": "Microsoft.Compute/availabilitySets",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-06-15",
       "dependsOn": [ "[variables('wgm01-vnetName')]" ],
       "tags": {
-        "displayName": " variables('rdsbrokerAS')"
+        "displayName": "rdsbrokerAS"
       },
       "properties": {
         "platformUpdateDomainCount": 5,
@@ -85,69 +88,50 @@
       }
     },
 
-
+    {
+      "name": "[variables('domaincontrollersAS')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [ "[variables('wgm01-vnetName')]" ],
+      "tags": {
+        "displayName": "domaincontrollersAS"
+      },
+      "properties": {
+        "platformUpdateDomainCount": 5,
+        "platformFaultDomainCount": 2
+      }
+    },
 
     {
-      "apiVersion": "2015-05-01-preview",
-      "type": "Microsoft.Network/loadBalancers",
-      "name": "[variables('rdsbrokerIntlbName')]",
+      "name": "[variables('emirsessionhostAS')]",
+      "type": "Microsoft.Compute/availabilitySets",
       "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[variables('wgm01-vnetName')]"
-      ],
+      "apiVersion": "2015-06-15",
+      "dependsOn": [ "[variables('wgm01-vnetName')]" ],
+      "tags": {
+        "displayName": "emirsessionhostAS"
+      },
       "properties": {
-        "frontendIPConfigurations": [
-          {
-            "properties": {
-              "subnet": {
-                "id": "[variables('subnet2Ref')]"
-              },
-              "privateIPAddress": "10.1.1.100",
-              "privateIPAllocationMethod": "Static"
-            },
-            "name": "LoadBalancerFrontend"
-          }
-        ],
-        "backendAddressPools": [
-          {
-            "name": "BackendPool1"
-          }
-        ],
-        "loadBalancingRules": [
-          {
-            "properties": {
-              "frontendIPConfiguration": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('rdsbrokerIntlbName')), '/frontendIpConfigurations/LoadBalancerFrontend')]"
-              },
-              "backendAddressPool": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('rdsbrokerIntlbName')), '/backendAddressPools/BackendPool1')]"
-              },
-              "probe": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('rdsbrokerIntlbName')), '/probes/lbprobe')]"
-              },
-              "protocol": "Tcp",
-              "frontendPort": 3389,
-              "backendPort": 3389,
-              "idleTimeoutInMinutes": 15
-            },
-            "Name": "lbrule"
-          }
-        ],
-        "probes": [
-          {
-            "properties": {
-              "protocol": "Tcp",
-              "port": 3389,
-              "intervalInSeconds": 15,
-              "numberOfProbes": 2
-            },
-            "name": "lbprobe"
-          }
-        ]
+        "platformUpdateDomainCount": 5,
+        "platformFaultDomainCount": 2
+      }
+    },
+
+    {
+      "name": "[variables('rdsgatewayrdswebAS')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [ "[variables('wgm01-vnetName')]" ],
+      "tags": {
+        "displayName": "dsgatewayrdswebAS"
+      },
+      "properties": {
+        "platformUpdateDomainCount": 5,
+        "platformFaultDomainCount": 2
       }
     }
-
-
 
 
   ],
