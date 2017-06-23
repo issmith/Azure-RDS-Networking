@@ -25,12 +25,16 @@
   <Import Condition=" Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets') " Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets" />
   <!-- vertag<:>end -->
   <ItemGroup>
-    <Content Include="azuredeploy.json" />
-    <Content Include="azuredeploy.parameters.json" />
+    <Content Include="nestedtemplates\networking.json" />
+    <Content Include="nestedtemplates\networking.parameters.json" />
     <None Include="Deployment.targets">
       <Visible>False</Visible>
     </None>
     <Content Include="Deploy-AzureResourceGroup.ps1" />
+    <Content Include="azurereploy.json" />
+    <Content Include="azuredeploy.parameters.json" />
+    <Content Include="nestedtemplates\Machines.json" />
+    <Content Include="nestedtemplates\Machines.parameters.json" />
   </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>

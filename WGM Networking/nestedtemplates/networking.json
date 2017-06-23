@@ -3,6 +3,8 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
 
+    
+
     },
   "variables": {
     "wgm01-vnetName": "wgm01-vnet",
@@ -22,7 +24,10 @@
     "rdsgatewayrdswebAS": "rdsgatewayrdsweb-as",
 
     "vnetId1": "[resourceId('Microsoft.Network/virtualNetworks', variables('wgm01-vnetName'))]",
-    "subnet2Ref": "[concat(variables('vnetId1'), '/subnets/', variables('wgm01-vnetSubnet2Name'))]"
+    "subnet2Ref": "[concat(variables('vnetId1'), '/subnets/', variables('wgm01-vnetSubnet2Name'))]",
+    "linkedtemplate1TemplateFolder": "nestedtemplates",
+    "linkedtemplate1TemplateFileName": "linkedtemplate1.json",
+    "linkedtemplate1TemplateParametersFileName": "linkedtemplate1.parameters.json"
 
   },
   "resources": [
