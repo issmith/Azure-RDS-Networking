@@ -33,8 +33,6 @@
     <Content Include="Deploy-AzureResourceGroup.ps1" />
     <Content Include="azurereploy.json" />
     <Content Include="azuredeploy.parameters.json" />
-    <Content Include="nestedtemplates\Machines.json" />
-    <Content Include="nestedtemplates\Machines.parameters.json" />
   </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>
